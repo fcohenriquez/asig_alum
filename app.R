@@ -384,7 +384,7 @@ f_asig <- function(x,y,z,w){
   
   rownames(result) <- c(seq(from=1, to=tot_alum, by=1))
   
-  result1 <- data.frame(id=rownames(result),curso_orig=result$curso_orig,result$Curso_final )
+  result1 <- data.frame(id=rownames(result),curso_orig=result$curso_orig,curso_final=result$Curso_final )
   
   rm(bloque_curso, aux, aux1, aux2, i, j, k, vnn, id_alum)
   

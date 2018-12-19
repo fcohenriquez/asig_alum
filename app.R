@@ -423,6 +423,7 @@ server <- function(input, output) {
   
  
   output$asig_curso <- renderDataTable({
+    req(input$file1)
     f_asig(input$file1$datapath)
     
   })

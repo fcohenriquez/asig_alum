@@ -20,19 +20,39 @@ ui <- fluidPage(
   # Sidebar with a slider input para el numero total de alumnos
   sidebarLayout(
     sidebarPanel(
-      sliderInput("alumnos",
-                  "Numero de alumnos:",
-                  min = 40,
-                  max = 200,
-                  value = 80),
-      sliderInput("n_curs_orig", "Numero de cursos originales:",
-                  min = 1, max = 5, value = 4),
+      tags$head(
+        tags$title('My first page')
+      ),
+      tags$body(
+        h1('My first heading'),
+        p('My first paragraph, with some ',
+          strong('bold'),
+          ' text.'),
+        div(id='myDiv', class='simpleDiv',
+            'Here is a div with some attributes.')
+      ),
+      
+
+      # Horizontal line ----
+      tags$hr(),
+      
+      # Input: Select a file ----
+      fileInput("file1", "Choose CSV File",
+                multiple = FALSE,
+                accept = c("text/csv",
+                           "text/comma-separated-values,text/plain",
+                           ".csv")),
+      
+      # Horizontal line ----
+      tags$hr(),
+      
+
+    
+      
+      
       sliderInput("n_curs_fin", "Numero de cursos finales:",
                   min = 1, max = 5, value = 3),
-      sliderInput("n_comp", "Numero de companeros escogidos:",
-                  min = 1, max = 3, value = 2),
-      sliderInput("n_incomp", "Numero de parejas incompatibles:",
-                  min = 2, max = 20, value = 2),
+
       # Button
       downloadButton("downloadData", "Descargar Asignacion")
       
@@ -59,7 +79,9 @@ server <- function(input, output) {
     tagList("Vinculo para documentacion:", url)
   })
   
-  f_asig <- function(x,y,z,w,w1){
+  f_asig <- function(f){
+  
+  
     
     ###################################################################################################################
     # Problema asignacion alumnos
@@ -73,34 +95,32 @@ server <- function(input, output) {
     
     library(lpSolve)
     
-    # Parametros
-    ############
     
-    # En general estos parametros se van a tomar de una planilla, aca se generan aleatoriamente 
-    #para desarrollar el programa
+    # Parametros tomados de una planilla
+    #####################################
+    
     
     set.seed(123456)
     
-    tot_alum <- x
-    num_cursos_orig <- y
-    num_cursos <- z
-    num_escogidos <- w
-    num_par_incomp <- w1
+    #datos_entrada <- read.csv(paste(,".csv",sep=""), row.names=1)
+    
+    datos_entrada <-read.csv(f,row.names=1)
+    
+    tot_alum <- nrow(datos_entrada)
+    num_cursos_orig <- length(levels(as.factor(datos_entrada$curso_orig)))
+    num_cursos <- input$n_curs_fin
+    num_escogidos <- ncol(datos_entrada)-4
+    
     
     tam_cursos <- tot_alum%/%num_cursos
     
     #Se simula el curso original del que provenia el estudiante
-    curso_orig <- c(rep(1,tot_alum/num_cursos_orig))
-    for (i in c(2:num_cursos_orig)) {
-      curso_orig <- c(curso_orig,rep(i,tot_alum/num_cursos_orig))
-    }
+    curso_orig <- datos_entrada$curso_orig
     
     max_mismo_curs_orig <- (tot_alum/num_cursos_orig)%/%num_cursos
     
     #Se genera un listado aleatorio de ninas para modelar 
-    ninas <- runif(tot_alum) 
-    ninas[ninas>=.5] <- 1
-    ninas[ninas<1] <- 0
+    ninas <- datos_entrada$ninas
     
     ninas_por_curso <- sum(ninas)%/%num_cursos
     
@@ -108,55 +128,41 @@ server <- function(input, output) {
     # list de incompatibles (no puede haber m?s incompatibles que cursos a asignar)
     
     
-    incomp <- sample(1:tot_alum, num_par_incomp*2, replace=FALSE)
+    incomp <- data.frame(id=datos_entrada$id,incompatible=datos_entrada$incompatible)
     
+    incomp <- subset(incomp,!is.na(incompatible))
     
-    i1 <- 3
-    incompatibles <- list(c(incomp[1],incomp[2]))
-    for (i in c(2:num_par_incomp)) {
-        
-        j <- i1+1
-        aux_inc <- list(c(incomp[i1],incomp[j]))
-        incompatibles <- c(incompatibles,aux_inc)
-      i1 <- i1+2
-    
-    }
-    
+    num_par_incomp <- nrow(incomp)
     n_incompat <-num_par_incomp
     
-rm( incomp, aux_inc)
+    incompatibles <- list(c(incomp[1,1],incomp[1,2]))
+    for (i in c(2:num_par_incomp)) {
+      
+      aux_inc <- list(c(incomp[i,1],incomp[i,2]))
+      incompatibles <- c(incompatibles,aux_inc)
+      
+    }
+    
+    
+    
+    rm( incomp, aux_inc)
+    
+    
+    
     
     # Companeros escogidos 
     
+    escogidos <- datos_entrada[,4]
     
-    
-    for (i in c(1:tot_alum)) {
-      i_1 <- i-1  
-      i1 <- i+1
-      if (i==1) {
-        univ_samp <- c(2:tot_alum)
+    if (num_escogidos>1) {
+      n_e1 <- num_escogidos-1
+      for (i in c(1:n_e1)) {
+        escogidos <- cbind(escogidos,datos_entrada[,4+i])
+        
       }
-      if (i==tot_alum) {
-        univ_samp <- c(1:i_1)
-      }
-      if (i>1 & i<tot_alum) {
-        univ_samp <-c(1:i_1,i1:tot_alum)
-      }
-      
-      escogidos_aux<- sample(univ_samp,num_escogidos)
-      
-      if (i==1) {
-        escogidos <- escogidos_aux
-      }
-      else {
-        escogidos <- rbind(escogidos,escogidos_aux)
-      }
-      
+      rm(n_e1)
     }
     
-    #c(-i)
-    
-    rm(univ_samp, escogidos_aux)
     
     # Funcion objetivo
     ###############################
@@ -412,12 +418,12 @@ rm( incomp, aux_inc)
     
     
     
-    return(result1)
-  }
+   return(result1)
+ }
   
-  output$asig_curso <- renderDataTable({ 
-    
-    f_asig(input$alumnos,input$n_curs_orig, input$n_curs_fin, input$n_comp, input$n_incomp)
+ 
+  output$asig_curso <- renderDataTable({
+    f_asig(input$file1$datapath)
     
   })
   
@@ -427,7 +433,7 @@ rm( incomp, aux_inc)
       paste("asignacion", ".csv", sep = "")
     },
     content = function(file) {
-      write.csv(f_asig(input$alumnos,input$n_curs_orig, input$n_curs_fin, input$n_comp, input$n_incomp), file, row.names = TRUE)
+      write.csv(f_asig(input$file1$datapath), file, row.names = TRUE)
     }
   )
   

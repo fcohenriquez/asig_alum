@@ -8,9 +8,10 @@
 #
 
 library(shiny)
+library(shinythemes)
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("superhero"),
    
    # Application title
    titlePanel("Asignacion de alumnos a nuevos cursos"),
@@ -359,6 +360,8 @@ f_asig <- function(x,y,z,w){
   
   result <- as.data.frame(result)
   result <- round(result,0)
+  result$V1[result$V1==0] <- 1
+  result$V1[result$V1>num_cursos] <- num_cursos
   result$Curso_final<-0 
   for (i in c(1:num_cursos)) {
     

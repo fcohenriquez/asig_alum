@@ -1,5 +1,3 @@
-
-
 #
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
@@ -10,65 +8,66 @@
 #
 
 library(shiny)
+library(shinythemes)
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(
-  
-  # Application title
-  titlePanel("Asignacion de alumnos a nuevos cursos"),
-  
-  # Sidebar with a slider input para el numero total de alumnos
-  sidebarLayout(
-    sidebarPanel(
-      tags$head(
-        tags$title('My first page')
-      ),
-      tags$body(
-        h1('My first heading'),
-        p('My first paragraph, with some ',
-          strong('bold'),
-          ' text.'),
-        div(id='myDiv', class='simpleDiv',
-            'Here is a div with some attributes.')
-      ),
-      
-
-      # Horizontal line ----
-      tags$hr(),
-      
-      # Input: Select a file ----
-      fileInput("file1", "Choose CSV File",
-                multiple = FALSE,
-                accept = c("text/csv",
-                           "text/comma-separated-values,text/plain",
-                           ".csv")),
-      
-      # Horizontal line ----
-      tags$hr(),
-      
-
-    
-      
-      
-      sliderInput("n_curs_fin", "Numero de cursos finales:",
-                  min = 1, max = 5, value = 3),
-
-      # Button
-      downloadButton("downloadData", "Descargar Asignacion")
-      
-    ),
-    
-    # Muestra la tabla de asignacion final de los alumnos
-    mainPanel(
-      dataTableOutput("asig_curso")
-    )
-  ),
-  # Para colocar un link
-  uiOutput("tab"),
-  # WHERE YOUR FOOTER GOES
-  hr(),
-  print("Aplicacion desarrollada por Francisco Henriquez, 2018")
-  
+ui <- fluidPage(theme = shinytheme("superhero"),
+                
+                # Application title
+                titlePanel("Asignacion de alumnos a nuevos cursos"),
+                
+                # Sidebar with a slider input para el numero total de alumnos
+                sidebarLayout(
+                  sidebarPanel(
+                    tags$head(
+                      tags$title('My first page')
+                    ),
+                    tags$body(
+                      h1('Suba el archivo con los datos de los alumnos'),
+                      p('El archivo debe ser ',
+                        strong('CSV'),
+                        ' delimitado por comas.'),
+                      div(id='myDiv', class='simpleDiv',
+                          'Los campos deben ser: row, id, curso_orig, ninas, elegido_1, ..., elegido_n, incompatible.')
+                    ),
+                    
+                    
+                    # Horizontal line ----
+                    tags$hr(),
+                    
+                    # Input: Select a file ----
+                    fileInput("file1", "Suba el archivo de los alumnos",
+                              multiple = FALSE,
+                              accept = c("text/csv",
+                                         "text/comma-separated-values,text/plain",
+                                         ".csv")),
+                    
+                    # Horizontal line ----
+                    tags$hr(),
+                    
+                    
+                    
+                    
+                    
+                    sliderInput("n_curs_fin", "Numero de cursos finales:",
+                                min = 1, max = 5, value = 3),
+                    
+                    # Button
+                    downloadButton("downloadData", "Descargar Asignacion")
+                    
+                  ),
+                  
+                  # Muestra la tabla de asignacion final de los alumnos
+                  mainPanel(
+                    dataTableOutput("asig_curso")
+                  )
+                ),
+                # Para colocar un link
+                uiOutput("tab"),
+                # WHERE YOUR FOOTER GOES
+                hr(),
+                print("Aplicacion desarrollada por Francisco Henriquez, 2018")
+                
 )
 
 # Define server logic required to draw a histogram
@@ -80,8 +79,8 @@ server <- function(input, output) {
   })
   
   f_asig <- function(f){
-  
-  
+    
+    
     
     ###################################################################################################################
     # Problema asignacion alumnos
@@ -418,10 +417,10 @@ server <- function(input, output) {
     
     
     
-   return(result1)
- }
+    return(result1)
+  }
   
- 
+  
   output$asig_curso <- renderDataTable({
     req(input$file1)
     f_asig(input$file1$datapath)
@@ -444,7 +443,4 @@ server <- function(input, output) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
-
-
 

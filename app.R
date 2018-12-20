@@ -62,7 +62,7 @@ ui <- fluidPage(
                   tabPanel("Estadisticas Proceso",
                           htmlOutput("t_sum_origen"),
                           tableOutput("sum_origen"),
-                          textOutput("t_sum_res"),
+                          htmlOutput("t_sum_res"),
                           tableOutput("sum_res"))
                         
                   )
@@ -516,14 +516,25 @@ server <- function(input, output) {
       
   })
   
-  output$t_sum_res <- renderText({
+  output$t_sum_res <- renderUI({
     req(input$file1)
-    print("Resumen de los resultados de la asignacion:")
+    resultados <- f_asig(input$file1$datapath, input$n_curs_fin)
+    mylist <- c("","Estadisticas de la asignacion",
+                "",
+                paste("Numero de alumnos asignados", nrow(resultados), sep=" "),
+                "",
+                "Tabla "
+                
+                )
+    
+    HTML(paste(mylist, sep = "", collapse = '<br/>'))
+    
   })
   
   output$sum_res <- renderTable({
     req(input$file1)
-    return(summary(f_asig(input$file1$datapath, input$n_curs_fin)))
+    resultados <- f_asig(input$file1$datapath, input$n_curs_fin)
+    return (table(resultados$curso_orig,resultados$curso_final ))
     
   })  
   

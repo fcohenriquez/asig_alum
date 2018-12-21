@@ -1,80 +1,86 @@
-
-
+#
+# This is a Shiny web application. You can run the application by clicking
+# the 'Run App' button above.
+#
+# Find out more about building applications with Shiny here:
+#
+#    http://shiny.rstudio.com/
+#
 
 library(shiny)
+library(shinythemes)
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(
-  
-  # Application title
-  titlePanel("Asignacion de alumnos a nuevos cursos"),
-  
-  # Sidebar with a slider input para el numero total de alumnos
-  sidebarLayout(
-    sidebarPanel(
-      tags$head(
-        tags$title('My first page')
-      ),
-      tags$body(
-        h4('Suba el archivo con los datos de los alumnos'),
-        p('El archivo debe ser ',
-          strong('CSV'),
-          ' separado por comas.'),
-        div(id='myDiv1', class='simpleDiv',
-            'Los campos deben ser: '),
-        div(id='myDiv2', class='simpleDiv',
-            'row, id, curso_orig, ninas, elegido_1, ..., elegido_n, incompatible.')
-      ),
-      
-
-      # Horizontal line ----
-      tags$hr(),
-      
-      # Input: Select a file ----
-      fileInput("file1", "Subir archivo de alumnos",
-                multiple = FALSE,
-                accept = c("text/csv",
-                           "text/comma-separated-values,text/plain",
-                           ".csv")),
-      
-      # Horizontal line ----
-      tags$hr(),
-      
-
-    
-      
-      
-      sliderInput("n_curs_fin", "Numero de cursos finales:",
-                  min = 1, max = 5, value = 3),
-
-      # Button
-      downloadButton("downloadData", "Descargar Asignacion")
-      
-    ),
-    
-    # Muestra la tabla de asignacion final de los alumnos
-    mainPanel(
-      tabsetPanel(type = "tabs",
-                  tabPanel("datos de alumnos", 
-                           textOutput("dat_orig"),  dataTableOutput("contents")),
-                  tabPanel("resultado asignacion", 
-                           textOutput("resu_asig"), dataTableOutput("asig_curso")),
-                  tabPanel("Estadisticas Proceso",
-                          htmlOutput("t_sum_origen"),
-                          tableOutput("sum_origen"),
-                          htmlOutput("t_sum_res"),
-                          tableOutput("sum_res"))
-                        
+ui <- fluidPage(theme = shinytheme("united"),
+                # Application title
+                titlePanel("Asignacion de alumnos a nuevos cursos"),
+                
+                # Sidebar with a slider input para el numero total de alumnos
+                sidebarLayout(
+                  sidebarPanel(
+                    tags$head(
+                      tags$title('My first page')
+                    ),
+                    tags$body(
+                      h4('Suba el archivo con los datos de los alumnos'),
+                      p('El archivo debe ser ',
+                        strong('CSV'),
+                        ' separado por comas.'),
+                      div(id='myDiv1', class='simpleDiv',
+                          'Los campos deben ser: '),
+                      div(id='myDiv2', class='simpleDiv',
+                          'row, id, curso_orig, ninas, elegido_1, ..., elegido_n, incompatible.')
+                    ),
+                    
+                    
+                    # Horizontal line ----
+                    tags$hr(),
+                    
+                    # Input: Select a file ----
+                    fileInput("file1", "Subir archivo de alumnos",
+                              multiple = FALSE,
+                              accept = c("text/csv",
+                                         "text/comma-separated-values,text/plain",
+                                         ".csv")),
+                    
+                    # Horizontal line ----
+                    tags$hr(),
+                    
+                    
+                    
+                    
+                    
+                    sliderInput("n_curs_fin", "Numero de cursos finales:",
+                                min = 1, max = 5, value = 3),
+                    
+                    # Button
+                    downloadButton("downloadData", "Descargar Asignacion")
+                    
+                  ),
+                  
+                  # Muestra la tabla de asignacion final de los alumnos
+                  mainPanel(
+                    tabsetPanel(type = "tabs",
+                                tabPanel("datos de alumnos", 
+                                         textOutput("dat_orig"),  dataTableOutput("contents")),
+                                tabPanel("resultado asignacion", 
+                                         textOutput("resu_asig"), dataTableOutput("asig_curso")),
+                                tabPanel("Estadisticas Proceso",
+                                         htmlOutput("t_sum_origen"),
+                                         tableOutput("sum_origen"),
+                                         htmlOutput("t_sum_res"),
+                                         tableOutput("sum_res"))
+                                
+                    )
+                    
                   )
-
-    )
-  ),
-  # Para colocar un link
-  uiOutput("tab"),
-  # WHERE YOUR FOOTER GOES
-  hr(),
-  print("Aplicacion desarrollada por Francisco Henriquez, 2018")
-  
+                ),
+                # Para colocar un link
+                uiOutput("tab"),
+                # WHERE YOUR FOOTER GOES
+                hr(),
+                print("Aplicacion desarrollada por Francisco Henriquez, 2018")
+                
 )
 
 # Define server logic required to draw a histogram
@@ -91,11 +97,11 @@ server <- function(input, output) {
     
   })
   
-
+  
   
   output$contents <- renderDataTable({
     
-
+    
     req(input$file1)
     
     tryCatch(
@@ -108,7 +114,7 @@ server <- function(input, output) {
       }
     )
     
-      return(df)
+    return(df)
     
   })
   
@@ -119,8 +125,8 @@ server <- function(input, output) {
   
   
   f_asig <- function(f,y){
-  
-  
+    
+    
     
     ###################################################################################################################
     # Problema asignacion alumnos
@@ -412,7 +418,7 @@ server <- function(input, output) {
     # Programacion lineal entera
     #####################################################################################
     
-
+    
     lp_cursos <- lp ("max", cursos.obj, restricciones, direcciones, coeficientes)
     
     # Exportacion de resultados
@@ -421,7 +427,7 @@ server <- function(input, output) {
     
     result <- as.data.frame(result)
     result <- round(result,0)
-
+    
     result$Curso_final<-0 
     for (i in c(1:num_cursos)) {
       
@@ -453,11 +459,11 @@ server <- function(input, output) {
     
     
     
-   return(result1)
- }
+    return(result1)
+  }
   
-
- 
+  
+  
   output$asig_curso <- renderDataTable({
     req(input$file1)
     f_asig(input$file1$datapath, input$n_curs_fin)
@@ -484,7 +490,7 @@ server <- function(input, output) {
     incomp <- data.frame(id=datos_entrada$id,incompatible=datos_entrada$incompatible)
     incomp <- subset(incomp,!is.na(incompatible))
     n_incompat <- nrow(incomp)
-
+    
     
     mylist <- c("Estadisticas de los datos originales",
                 "",
@@ -497,23 +503,23 @@ server <- function(input, output) {
                 "",
                 "Distribucion de alumnos por curso"
                 
-                )
+    )
     
     HTML(paste(mylist, sep = "", collapse = '<br/>'))
   })
-
+  
   output$sum_origen <- renderTable({
     req(input$file1)
     datos_entrada <- read.csv(input$file1$datapath)
-      a <- table(datos_entrada$curso_orig,datos_entrada$ninas)
-      b <- table(datos_entrada$curso_orig)
-      c <- cbind(rownames(table(datos_entrada$curso_orig)),a,b)
-      d <- c("Total",sum(a[,1]),sum(a[,2]), sum(b))
-      c <- rbind(c,d)
-      c <- as.data.frame(c)
-      colnames(c) <- c("Curso", "Ninos", "Ninas", "Total")
-      return(c)
-      
+    a <- table(datos_entrada$curso_orig,datos_entrada$ninas)
+    b <- table(datos_entrada$curso_orig)
+    c <- cbind(rownames(table(datos_entrada$curso_orig)),a,b)
+    d <- c("Total",sum(a[,1]),sum(a[,2]), sum(b))
+    c <- rbind(c,d)
+    c <- as.data.frame(c)
+    colnames(c) <- c("Curso", "Ninos", "Ninas", "Total")
+    return(c)
+    
   })
   
   output$t_sum_res <- renderUI({
@@ -525,7 +531,7 @@ server <- function(input, output) {
                 "",
                 "Tabla "
                 
-                )
+    )
     
     HTML(paste(mylist, sep = "", collapse = '<br/>'))
     
@@ -534,7 +540,17 @@ server <- function(input, output) {
   output$sum_res <- renderTable({
     req(input$file1)
     resultados <- f_asig(input$file1$datapath, input$n_curs_fin)
-    return (table(resultados$curso_orig,resultados$curso_final ))
+    datos_entrada <- read.csv(input$file1$datapath)
+    datos_entrada <- as.data.frame(datos_entrada)
+    #resultados$curso_orig <- as.factor(resultados$curso_orig)
+    #resultados$curso_final <- as.factor(resultados$curso_final)
+    a <- table(resultados$curso_orig,resultados$curso_final)
+    #a <- as.data.frame(a)
+    union <- merge(datos_entrada,resultados, by=c("id", "id"))
+    
+    b <- table (union$curso_final,union$ninas)
+    c <- table (union$curso_orig.x,union$ninas )
+    return (c)
     
   })  
   
@@ -545,7 +561,4 @@ server <- function(input, output) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
-
-
 

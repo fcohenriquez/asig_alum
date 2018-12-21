@@ -521,6 +521,7 @@ server <- function(input, output) {
     resultados <- as.data.frame(resultados)
     datos_entrada <- read.csv(input$file1$datapath)
     datos_entrada <- as.data.frame(datos_entrada)
+    union <- merge(datos_entrada,resultados, by=c("id", "id"))
     
     #Contar incompatibles
     incomp <- subset(datos_entrada,!is.na(incompatible))
@@ -549,6 +550,7 @@ server <- function(input, output) {
   output$sum_res <- renderTable({
     req(input$file1)
     resultados <- f_asig(input$file1$datapath, input$n_curs_fin)
+    resultados <-as.data.frame(resultados)
     datos_entrada <- read.csv(input$file1$datapath)
     datos_entrada <- as.data.frame(datos_entrada)
     union <- merge(datos_entrada,resultados, by=c("id", "id"))

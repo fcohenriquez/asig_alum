@@ -518,9 +518,25 @@ server <- function(input, output) {
   output$t_sum_res <- renderUI({
     req(input$file1)
     resultados <- f_asig(input$file1$datapath, input$n_curs_fin)
+    resultados <- as.data.frame(resultados)
+    datos_entrada <- read.csv(input$file1$datapath)
+    datos_entrada <- as.data.frame(datos_entrada)
+    
+    #Contar incompatibles
+    incomp <- subset(datos_entrada,!is.na(incompatible))
+    incomp <-data.frame(id_orig=incomp$id,id=incomp$incompatible, incomp=1)
+    incomp <- merge(incomp,resultados, by=c("id", "id"))
+    incomp$curso_orig <- NULL
+    colnames(incomp) <- c("incompatible", "id", "incomp", "curso_incomp")
+    incomp <- merge(incomp,union, by=c("id", "id"))
+    incomp$incorrecto <- 0
+    incomp$incorrecto[incomp$curso_incomp==incomp$curso_final] <- 1
+    sum(incomp$incorrecto)
+    
     mylist <- c("","Estadisticas de la asignacion",
                 "",
                 paste("Numero de alumnos asignados", nrow(resultados), sep=" "),
+                paste ("Hay",sum(incomp$incorrecto),"incompatibles en el mismo curso", sep=" "),
                 "",
                 "Tabla "
                 
@@ -535,6 +551,7 @@ server <- function(input, output) {
     resultados <- f_asig(input$file1$datapath, input$n_curs_fin)
     datos_entrada <- read.csv(input$file1$datapath)
     datos_entrada <- as.data.frame(datos_entrada)
+    union <- merge(datos_entrada,resultados, by=c("id", "id"))
     #resultados$curso_orig <- as.factor(resultados$curso_orig)
     #resultados$curso_final <- as.factor(resultados$curso_final)
     a <- table(resultados$curso_orig,resultados$curso_final)
@@ -542,7 +559,7 @@ server <- function(input, output) {
     union <- merge(datos_entrada,resultados, by=c("id", "id"))
     
     b <- table (union$curso_final,union$ninas)
-    c <- table (union$curso_orig.x,union$ninas )
+    c <- table (union$curso_orig.x,union$curso_final )
     return (c)
     
   })  
